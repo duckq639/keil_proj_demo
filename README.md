@@ -347,3 +347,5 @@ git reset --hard HEAD~1
 这个入门版本先不展开 `struct`、`enum`、指针、数组、宏参数等进阶内容，后续可以单独开一个训练任务。
 
 源码文件已保存为 UTF-8（带 BOM）编码，Keil 可以直接识别中文注释。如果仍然乱码，请用 VS Code 查看和编辑源码，用 Keil 负责编译下载，或者查阅资料调整keil的文件编码格式。
+
+Git图形化操作可以参考 [Git在vscode中的图形化操作方式](vscode中git图形化操作.md)
