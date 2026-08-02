@@ -3,6 +3,7 @@
 这是一个给机器人队新人准备的 Git 操作以及 STM32 入门示例工程。
 完成本教程需要你用Vscode打开GitHub上下载解压的 `keil_proj_demo` 文件夹，按顺序完成 8.6、8.7、8.8 三天的作业。
 <img src="./doc/图片/download_release.png" alt="download_release" title="download_release" width="600">
+
 其中 8.7、8.8 的作业是控制组分流后的内容，<mark style="background-color: red;"> 8.6 的 Git 与 Markdown 学习和作业练习所有人都要完成。<mark style="background-color: red;">
 
 > 8.6的Git学习和作业练习，请直接跳转到文档末尾的**作业与参考资料**部分。
