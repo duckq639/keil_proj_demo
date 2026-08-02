@@ -1,7 +1,7 @@
 # keil_proj_demo
 
 这是一个给机器人队新人准备的 Git 操作以及 STM32 入门示例工程。
-**Git的作业练习，请直接跳转到文档末尾的作业链接。**
+> **8.6的Git学习和作业练习，请直接跳转到文档末尾的作业链接。**
 
 工程会循环演示下面这件事：
 
@@ -415,11 +415,11 @@ switch (led_num)
 
 每天的作业单独放在 [doc/作业.md](doc/作业.md)，README 只负责讲工程和语法。
 
+- Git 基础概念：[doc/git总览.md](doc/git总览.md)；
+- VS Code 图形化操作：[doc/vscode中git图形化操作.md](doc/vscode中git图形化操作.md)。
 - 8.6：Git 基础操作：init、add、commit、log、diff、分支、合并、回退；C语言环境搭建机械组意向选做
 - 8.7：编译烧录与工具链配置；
 - 8.8：C 语言工程操作：修改 `main.c` 的现象并提交，完成一个小功能；选做流水灯报警系统；
-- Git 基础概念：[doc/git总览.md](doc/git总览.md)；
-- VS Code 图形化操作：[doc/vscode中git图形化操作.md](doc/vscode中git图形化操作.md)。
 
 ## 暂时不展开的内容
 
