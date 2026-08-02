@@ -23,8 +23,23 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+/*
+ * 为什么调用自己的文件时，要先把 .c 文件加进 Keil 工程？
+ * 1. Keil 不会自动扫描文件夹里的源码，只有 .uvprojx 中列出的 .c 文件才会参与编译；
+ * 2. 头文件 .h 只负责声明函数，函数的真正实现还在 .c 文件里；
+ * 3. 如果只 #include 头文件但没有把 .c 加进工程，编译可能通过，
+ *    但链接时会报 Undefined symbol 之类的错误，因为找不到函数实现；
+ * 4. 需要先在keil文件夹中创建Group,在Group内添加已存在的c文件; 
+ * 5. 还需要在 Options for Target -> C/C++ -> Include Paths 中加上 .h 所在目录，
+ *    否则编译器连头文件都找不到。
+ * 本工程已经把 hardware/src/buzzer.c 和 led.c 加进 Keil 工程的 hardware 分组，
+ * 并把 hardware/inc 加进 Include Paths，所以这里可以直接包含并使用。
+ */
 #include "buzzer.h"   /* 蜂鸣器驱动的函数声明 */
 #include "led.h"      /* LED 驱动的函数声明 */
+
+// 在这里替换成#include user_beep.h
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,10 +50,10 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 /* #define 是宏定义：编译前会把名字替换成后面的内容 */
-#define DEMO_LED_COUNT   4U    /* 板载 LED 数量，U 表示 unsigned 无符号数 */
-#define DEMO_BLINK_TIMES 3U    /* 每颗 LED 闪烁次数 */
-#define DEMO_DELAY_MS    250U  /* LED 亮/灭持续时间，单位毫秒 */
-#define DEMO_BEEP_MS     120U  /* 蜂鸣器响一声的时长 */
+#define LED_COUNT   4U    /* 板载 LED 数量，U 表示 unsigned 无符号数 */
+#define BLINK_TIMES 3U    /* 每颗 LED 闪烁次数 */
+#define DELAY_MS    250U  /* LED 亮/灭持续时间，单位毫秒 */
+#define BEEP_MS     120U  /* 蜂鸣器响一声的时长 */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,13 +71,13 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 /* 函数声明（原型）：告诉编译器函数名、参数和返回值，定义在下方 USER CODE 4 */
-void demo_blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms);
-void demo_beep(uint32_t beep_ms);
+void blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms);
+void beep(uint32_t beep_ms);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+__weak void user_beep(){}
 /* USER CODE END 0 */
 
 /**
@@ -75,9 +90,9 @@ int main(void)
   /* USER CODE BEGIN 1 */
   /* 局部变量：只能在 main 函数内使用 */
   uint8_t  current_led = 1U;              /* 当前要操作的 LED 编号 */
-  uint16_t blink_times = DEMO_BLINK_TIMES;/* 每颗 LED 闪烁次数 */
-  uint32_t delay_ms    = DEMO_DELAY_MS;   /* 亮/灭延时 */
-  const uint8_t led_count = DEMO_LED_COUNT; /* const 表示该变量不允许修改 */
+  uint16_t blink_times = BLINK_TIMES;/* 每颗 LED 闪烁次数 */
+  uint32_t delay_ms    = DELAY_MS;   /* 亮/灭延时 */
+  const uint8_t led_count = LED_COUNT; /* const 表示该变量不允许修改 */
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -100,9 +115,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   /* GPIO 初始化：PA4~PA7 是 LED，PA8 是蜂鸣器，具体配置见 Core/Src/gpio.c */
+  // 配置的封装查阅原理图
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
   buzzer_init(); /* 让蜂鸣器引脚先处于关闭状态 */
+  user_beep();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -118,11 +135,11 @@ int main(void)
     /* while 循环：条件成立就反复执行 {} 里的代码 */
     while (current_led <= led_count)
     {
-      demo_blink_led(current_led, blink_times, delay_ms);
+      blink_led(current_led, blink_times, delay_ms);
       current_led++; /* 等价于 current_led = current_led + 1 */
     }
 
-    demo_beep(DEMO_BEEP_MS);
+    beep(BEEP_MS);
 
     /* if / else 判断：让延时每次变快一点，到 100 后重新回到初始值 */
     if (delay_ms > 100U)
@@ -131,7 +148,7 @@ int main(void)
     }
     else
     {
-      delay_ms = DEMO_DELAY_MS;
+      delay_ms = DELAY_MS;
     }
   }
   /* USER CODE END 3 */
@@ -185,12 +202,12 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 /* 函数定义：这里才是函数的具体实现 */
-void demo_blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms)
+void blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms)
 {
   uint16_t i = 0U; /* 循环计数变量 */
 
   /* if 判断：LED 编号只允许 1~4 */
-  if (led_num > DEMO_LED_COUNT)
+  if (led_num > LED_COUNT)
   {
     return; /* return 直接结束当前函数 */
   }
@@ -205,7 +222,7 @@ void demo_blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms)
   }
 }
 
-void demo_beep(uint32_t beep_ms)
+void beep(uint32_t beep_ms)
 {
   buzzer_on();          /* 打开蜂鸣器 */
   HAL_Delay(beep_ms);   /* 保持响一段时间 */

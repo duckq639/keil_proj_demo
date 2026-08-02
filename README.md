@@ -1,6 +1,7 @@
 # keil_proj_demo
 
-这是一个给机器人队新人准备的 STM32 入门示例工程，使用 Keil MDK 打开。
+这是一个给机器人队新人准备的 Git 操作以及 STM32 入门示例工程。
+**Git的作业练习，请直接跳转到文档末尾的作业链接。**
 
 工程会循环演示下面这件事：
 
@@ -12,6 +13,8 @@
 工程里刻意安排了一些可以改的小地方，用来练习 Git 的分支、提交、回退等操作。
 
 ## 硬件资源
+
+STM32F405RGT6 的 PA4~PA8 引脚连接了 4 颗 LED 和 1 个蜂鸣器，具体如下：
 
 | 外设 | 引脚 | 说明 |
 | --- | --- | --- |
@@ -36,6 +39,16 @@ keil_proj_demo/
 ├── hardware/
 │   ├── inc/                 # 自己写的 LED、蜂鸣器头文件
 │   └── src/                 # 自己写的 LED、蜂鸣器实现文件
+├── user/
+│   ├── inc/
+│   │   └── user_beep.h      # 8.7 作业：蜂鸣器长短短三声声明
+│   └── src/
+│       └── user_beep.c      # 8.7 作业：蜂鸣器长短短三声实现
+├── doc/
+│   ├── git总览.md           # Git 与 GitHub 使用说明
+│   ├── vscode中git图形化操作.md  # VS Code 图形化 Git 操作
+│   ├── 作业.md              # 三天的作业安排
+│   └── 图片/                # 文档配图
 ├── MDK-ARM/                 # Keil 工程文件和编译输出
 │   └── keil_proj_demo.uvprojx
 ├── keil_proj_demo.ioc       # CubeMX 工程配置，改引脚时用 CubeMX 打开
@@ -50,13 +63,19 @@ hardware/inc/led.h   LED 函数声明和引脚宏
 hardware/src/led.c   LED 点亮/熄灭实现，里面有 switch 例子
 hardware/inc/buzzer.h 蜂鸣器函数声明和引脚宏
 hardware/src/buzzer.c 蜂鸣器打开/关闭实现
+user/inc/user_beep.h  8.7 作业：蜂鸣器长短短三声（默认未加入工程）
+user/src/user_beep.c  8.7 作业：蜂鸣器长短短三声实现
+doc/git总览.md       Git 与 GitHub 使用说明
+doc/vscode中git图形化操作.md  VS Code 图形化 Git 操作
+doc/作业.md          三天的作业安排
+doc/图片/            文档配图
 MDK-ARM/keil_proj_demo.uvprojx  Keil 工程文件，双击或在 Keil 中打开
 ```
 
 ## 打开、编译和下载
 
 1. 安装 Keil MDK 5，并安装 STM32F4 器件支持包；
-2. 双击打开 `MDK-ARM/keil_proj_demo.uvprojx`；
+2. 在 *文件资源管理器中* 双击打开 `MDK-ARM/keil_proj_demo.uvprojx`；
 3. 按 `F7` 编译工程；
 4. 连接 ST-Link 或调试器，按 `F8` 下载；
 5. 复位开发板，观察 LED 和蜂鸣器。
@@ -79,7 +98,7 @@ Keil MDK 的编译下载流程通常分这几步：
 4. 链接：把多个 `.o` 文件和库按地址分配链接在一起，生成可执行映像 `.axf` 和烧录文件 `.hex`；
 5. 下载：通过 ST-Link 等调试器把 `.hex` 写入芯片 Flash。
 
-所以一次完整的“编译”不只是按 F7，而是“预处理 -> 编译 -> 汇编 -> 链接 -> 下载 -> 复位运行”这条工具链在协同工作。
+所以按 `F7` 完成的是“预处理 -> 编译 -> 汇编 -> 链接”这条构建链；要让程序真正跑起来，还需要“下载 -> 复位运行”。
 
 ### 为什么改完 C 要重新编译下载
 
@@ -89,7 +108,7 @@ Keil MDK 的编译下载流程通常分这几步：
 - 重新下载：把新的 `.hex` 覆盖写入 Flash；
 - 复位：CPU 重新从 Flash 第一条指令开始执行新程序。
 
-如果只编译不下载，编译产物只是硬盘上新固件；如果只下载不编译，下载的仍是旧固件。新人练习时最容易漏掉的是：源码改完 -> 保存 -> 编译 -> 下载 -> 复位，这五步都要走完。
+如果只编译不下载，编译产物只是硬盘上新固件；如果只下载不编译，下载的仍是旧固件。**源码改完 -> 保存 -> 编译 -> 下载 -> 复位**，这五步都要走完。
 
 ## 程序运行流程
 
@@ -166,21 +185,123 @@ const uint8_t led_count = 4U; /* const 表示值不能被修改 */
 
 数字后面的 `U` 表示无符号数，例如 `250U`。
 
+### 变量的定义
+
+“定义一个变量”就是向编译器申请一块内存，并给它起一个名字。定义时写三部分：类型、名字、初始值，其中初始值可以省略。
+
+```c
+uint8_t current_led = 1U;
+```
+
+拆开看：
+
+- `uint8_t` 是**类型**，决定这块内存能装什么数据、占多少位；
+- `current_led` 是**变量名**，之后用这个名字读写这块内存；
+- `= 1U` 是**初始值**，表示变量一创建就放进 `1U`；这里的 `=` 是初始化，和后面 `current_led++` 这种修改值不一样。
+
+变量名只能由**字母、数字和下划线**组成，不能以数字开头，也不能和 `if`、`int`、`while` 这些 C 关键字重名。给名字时最好能看出用途，例如 `current_led` 表示“当前操作的 LED”。
+
+局部变量如果没有写初始值，它里面可能是旧内存留下的随机数，所以本工程里所有变量定义时都给了初值。
+
+### 变量的作用范围
+
+变量的作用范围也叫作用域，指程序里哪些位置能直接使用这个名字。在 `{}` 块里定义的变量，只在这个块和它嵌套的子块里有效，离开这个块就不能再访问。
+
+本工程里用到的变量都是局部变量：
+
+- `current_led`、`blink_times`、`delay_ms`、`led_count` 定义在 `main()` 里，只能在 `main()` 内使用；
+- `i` 定义在 `blink_led()` 里，只能在 `blink_led()` 内使用；
+- `led_num`、`times`、`delay_ms` 是 `blink_led()` 的参数，作用范围同样是这个函数内部。
+
+还有一类全局变量，定义在所有函数外面，任何函数都能用。全局变量用起来方便，但会让函数之间互相“偷改”数据，程序变大后很难查，所以这个入门工程没有使用，先理解局部变量即可。
+
+### 函数的类型、命名与参数
+
+一个函数由返回类型、函数名、参数列表和函数体组成。`blink_led()` 是项目里现成的例子：
+
+```c
+void blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms)
+{
+    /* 函数体 */
+}
+```
+
+逐个看：
+
+- **返回类型**写在最前面，也叫函数类型。`void` 表示“没有返回值”，函数执行完就回到调用处；`main()` 写的是 `int main(void)`，表示按 C 标准它应该返回 `int`。如果返回类型不是 `void`，函数体里一般要有 `return 值;`。`blink_led()` 里的 `return;` 就是提前结束这个 `void` 函数。
+- **函数名**用能说明用途的英文，多个单词用下划线连起来。例如 `blink_led` 是“闪烁 LED”，`buzzer_init` 是“初始化蜂鸣器”，`led_on` 是“点亮 LED”。
+- **参数**写在括号里，格式是 `类型 名字`。类型决定这个参数能表示多大范围、占几位：`led_num` 用 `uint8_t`，因为 LED 编号只有 1~4；`times` 用 `uint16_t`，能表示 0~65535 次；`delay_ms` 用 `uint32_t`，毫秒数的范围更大。`led_num` 表示“第几颗 LED”，`times` 表示“闪几次”，`delay_ms` 表示“延时多少毫秒”。调用时传进去的值会按参数类型存放，类型差太多时编译器会报警告，所以写参数时要选够用又不浪费的类型。没有参数时写 `(void)`。
+- **函数体**是 `{}` 里的代码，也就是这个函数真正要做的事。
+
+参数只在函数内部有效，可以把它理解成函数自己的局部变量。调用函数时传进去的值会复制一份给参数，函数内部修改参数不会影响外面原来的变量。
+
+### 函数的调用
+
+调用一个函数，就是写下“函数名(实参)”，例如：
+
+```c
+blink_led(current_led, blink_times, delay_ms);
+```
+
+调用时，`current_led`、`blink_times`、`delay_ms` 这些**实际值会按顺序传给函数定义里的参数**：`current_led` 传给 `led_num`，`blink_times` 传给 `times`，`delay_ms` 传给 `delay_ms`。传给函数的值叫实参，函数定义里接收值的叫形参。
+
+程序执行到这一行时，会先跳进 `blink_led()` 把函数体跑完，再回到 `main()` 继续执行下一行。本工程里 `main()` 还调用了 `beep(BEEP_MS)`，`blink_led()` 内部又调用了 `led_on()`、`led_off()` 和 `HAL_Delay()`，一层一层调用下去。
+
+调用前必须能看到函数声明，否则编译器不认识这个函数名。
+
+### 函数的声明与定义
+
+声明（也叫函数原型）只告诉编译器“存在这样一个函数，名字、参数、返回类型是什么”，末尾有分号，不写函数体：
+
+```c
+void blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms);
+```
+
+定义除了同样写出返回类型、函数名和参数，还要写上函数体：
+
+```c
+void blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms)
+{
+    /* 函数体 */
+}
+```
+
+声明和定义必须一致：返回类型、函数名、参数类型都不能改，只有参数名字可以不同。前面“C 文件与头文件的作用”一节用 `led.h` / `led.c` 演示了跨文件分工，这里再补充语法上的细节：
+
+简单说，声明告诉编译器“这个函数存在”，定义告诉编译器“这个函数具体做什么”。
+
+- 声明可以写在 `.h` 头文件里给别的文件用，也可以写在 `.c` 文件顶部给本文件后面的代码用；
+- `main.c` 顶部 `USER CODE PFP` 区域里的是函数声明，`USER CODE 4` 区域里的是函数定义；<small>可以使用`Ctrl+F`搜索代码段</small>
+- 一个函数只能定义一次，否则链接时会报重复定义；但可以有多个内容一致的声明；
+- 如果声明存在、定义却没写，或者定义所在的 `.c` 文件没有加进 Keil 工程，链接时会报 `Undefined symbol` 之类的错误。
+
 ### `#define` 宏定义
 
 `main.c` 顶部用 `#define` 给常量起名字：
 
 ```c
-#define DEMO_LED_COUNT   4U
-#define DEMO_BLINK_TIMES 3U
-#define DEMO_DELAY_MS    250U
+#define LED_COUNT   4U
+#define BLINK_TIMES 3U
+#define DELAY_MS    250U
 ```
 
-宏在编译前会被替换成后面的内容。宏定义结尾不需要分号。
+`#define` 是预处理指令，不是变量定义。编译流程的第一步是预处理，这一步会把代码里出现的 `LED_COUNT` 原样替换成 `4U`，替换完成之后，宏名字本身就不存在了。所以宏不占内存：它不会像变量那样分配一块存储，也没有类型、地址，Keil 里也看不到它的值，只能看到替换后的数字。
+
+`const` 则不一样。`const uint8_t led_count = LED_COUNT;` 仍然是一个真正的变量，编译时通常会为它分配一块内存，只是编译器不允许代码再去修改它的值。两者区别可以这样记：
+
+| | `#define` 宏 | `const` 变量 |
+| --- | --- | --- |
+| 什么时候处理 | 编译前的预处理阶段 | 编译阶段 |
+| 是否占内存 | 不占，只是文本替换 | 通常占，是一块真正的存储 |
+| 有没有类型 | 没有类型 | 有类型，例如 `uint8_t` |
+| 能不能修改 | 没有“值”，不存在修改 | 定义后不能修改 |
+| 什么时候用 | 纯数字常量、编译期常量 | 希望保留类型且防止被改时 |
+
+宏定义结尾不需要分号。
 
 ### `for` 循环
 
-`demo_blink_led()` 中用 `for` 控制闪烁次数：
+`blink_led()` 中用 `for` 控制闪烁次数：
 
 ```c
 for (i = 0U; i < times; i++)
@@ -210,17 +331,18 @@ while (1)
 ```c
 while (current_led <= led_count)
 {
-    demo_blink_led(current_led, blink_times, delay_ms);
+    blink_led(current_led, blink_times, delay_ms);
     current_led++;
 }
 ```
 
 ### `if` 判断
 
-`demo_blink_led()` 用 `if` 检查 LED 编号是否合法：
+`blink_led()` 用 `if` 检查 LED 编号是否合法：
+`if` 内条件为真，则执行括号内的代码，否则跳过。
 
 ```c
-if (led_num > DEMO_LED_COUNT)
+if (led_num > LED_COUNT)
 {
     return;
 }
@@ -248,104 +370,33 @@ switch (led_num)
 
 `case` 匹配成功后，如果没有 `break`，会继续执行下一个 `case` 的代码。`default` 处理没有匹配到的情况。
 
-### 函数声明与定义
+### `switch` 和多个 `if` 的区别
 
-`main.c` 顶部先写函数声明，也就是函数原型：
+`switch` 和多个 `if / else if` 都能做分支，区别主要是“能判断什么”和“好不好读”：
 
-```c
-void demo_blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms);
-```
+| 对比点 | `switch` | 多个 `if / else if` |
+| --- | --- | --- |
+| 判断方式 | 同一个变量和几个固定值比较 | 可以比较不同变量，也可以写范围和逻辑组合 |
+| `case` 限制 | 必须是整数常量，不能写范围 | 条件可以是任意表达式 |
+| 可读性 | 固定分支多时更整齐 | 分支少或条件复杂时更直接 |
+| 常见坑 | 容易漏 `break` | 条件顺序会影响结果 |
 
-文件后面的 `USER CODE 4` 区域写函数定义：
+本工程里两种都用到了：`led_on()` / `led_off()` 用 `switch` 按 LED 编号选引脚，因为编号就是 1/2/3/4 这几个固定值；`blink_led()` 用 `if (led_num > LED_COUNT)` 做范围判断，`main()` 用 `if / else` 判断 `delay_ms` 是否还大于 `100U`，这类范围判断 `switch` 写不了。
 
-```c
-void demo_blink_led(uint8_t led_num, uint16_t times, uint32_t delay_ms)
-{
-    /* 函数体 */
-}
-```
+选型可以这样记：同一个值分很多固定分支，用 `switch`；条件五花八门、要比较范围或组合条件，用 `if`。性能差别通常不大，编译器会自己优化，新手阶段先按可读性选。
 
-函数声明告诉编译器“这个函数存在”，函数定义告诉编译器“这个函数具体做什么”。
+## 作业与参考资料
 
-## Git 练习点
+每天的作业单独放在 [doc/作业.md](doc/作业.md)，README 只负责讲工程和语法。
 
-本目录默认还没有 Git 仓库，可以按下面的步骤练习。
-
-### 第一次提交
-
-```bash
-git init
-git add .
-git commit -m "first commit"
-```
-
-`git add .` 会把当前目录加入暂存区。`.gitignore` 已经帮我们排除了 Keil 编译输出和用户界面文件。
-
-### 练习 1：改闪烁次数
-
-打开 `Core/Src/main.c`，找到：
-
-```c
-#define DEMO_BLINK_TIMES 3U
-```
-
-把 `3U` 改成 `5U`，保存后重新编译下载，然后提交：
-
-```bash
-git add Core/Src/main.c
-git commit -m "change blink times to 5"
-```
-
-### 练习 2：改亮灭速度
-
-把 `DEMO_DELAY_MS` 从 `250U` 改成 `500U`，观察现象并提交。
-
-### 练习 3：创建分支
-
-创建一个新分支，在分支里修改演示效果：
-
-```bash
-git switch -c feature-blink
-```
-
-修改 `demo_blink_led()` 的循环次数或延时，然后提交。切回主分支：
-
-```bash
-git checkout main
-```
-
-查看历史：
-
-```bash
-git log --oneline
-git diff main feature-blink
-```
-
-确认没问题后可以把分支合并回来：
-<small>**注意：** 如果在主分支上也改了同一段代码，合并时可能会有冲突，需要手动解决。</small>
-<small>如果不想保留分支，可以在合并后删除它：`git branch -d feature-blink`。</small>
-<small>**对象关系：** 先 `git checkout main` 再 `git merge feature-blink`，表示把 `feature-blink` 合并到当前分支 `main`；当前分支是接收方，命令行里的参数分支是来源。</small>
-
-```bash
-git checkout main
-git merge feature-blink
-```
-
-### 练习 4：体验回退
-
-先提交一个改动，再回退到上一个版本：
-
-```bash
-git log --oneline
-git reset --hard HEAD~1
-```
-
-回退会丢掉最后一次提交，建议先在练习分支上操作。
+- 8.6：Git 基础操作：init、add、commit、log、diff、分支、合并、回退；C语言环境搭建机械组意向选做
+- 8.7：编译烧录与工具链配置；
+- 8.8：C 语言工程操作：修改 `main.c` 的现象并提交，完成一个小功能；选做流水灯报警系统；
+- Git 基础概念：[doc/git总览.md](doc/git总览.md)；
+- VS Code 图形化操作：[doc/vscode中git图形化操作.md](doc/vscode中git图形化操作.md)。
 
 ## 暂时不展开的内容
 
-这个入门版本先不展开 `struct`、`enum`、指针、数组、宏参数等进阶内容，后续可以单独开一个训练任务。
+这个版本先不展开 `struct`、`enum`、指针、数组、宏参数等进阶内容，后续单独开一个训练任务。
 
 源码文件已保存为 UTF-8（带 BOM）编码，Keil 可以直接识别中文注释。如果仍然乱码，请用 VS Code 查看和编辑源码，用 Keil 负责编译下载，或者查阅资料调整keil的文件编码格式。
-
-Git图形化操作可以参考 [Git在vscode中的图形化操作方式](vscode中git图形化操作.md)
