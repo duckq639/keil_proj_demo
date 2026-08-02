@@ -59,7 +59,7 @@
 如果图形化操作不成功，可以使用命令行：
 
 ```bash
-git remote add origin https://gitee.com/your-name/keil_proj_demo.git
+git remote add origin `你的远程仓库地址`
 git push -u origin main
 ```
 
