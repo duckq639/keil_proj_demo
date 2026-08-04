@@ -22,13 +22,13 @@
 用 HAL 库开发单片机项目，一般不是拿到工程就直接写代码，而是先有需求、再定硬件、再生成初始化工程，最后写业务代码：
 
 1. **明确工程需求**：确定板子要实现什么功能、需要哪些外设。本工程的需求就是“4 颗 LED 依次闪烁、蜂鸣器响一声、亮灭速度变化”，所以只需要 GPIO 和延时。
-2. **设计硬件电路**：根据需求选择芯片、画原理图和 PCB。每个引脚接了什么外设要看[板子原理图](./F4主控板原理图.pdf)，例如本工程的 PA4~PA7 接 LED、PA8 接蜂鸣器，对应关系见下一节“硬件资源”。
+2. **设计硬件电路**：根据需求选择芯片、画原理图和 PCB。每个引脚接了什么外设要看板子原理图（[F4](./F4主控板原理图.pdf) / [H7 本工程使用](./H7原理图6串口_2026-01-18.pdf)），例如本工程 H7 板的 PB3~PB6 接 LED、PB0 接蜂鸣器，对应关系见下一节”硬件资源”。
 3. **CubeMX 配置并生成工程**：打开 CubeMX（本工程已附带 `keil_proj_demo.ioc`），对照原理图选芯片、配时钟、使能外设、分配引脚，然后生成 Keil 工程。生成结果就是 `Core/`、`Drivers/` 这些目录和初始化代码。
 4. **Keil 开发与验证**：用 Keil 打开工程，在 `main()` 的 `USER CODE` 区域写业务代码，编译、下载、复位观察现象。
 
 ### 本教程已配置好的部分
 
-上面流程里“工程需求、硬件电路、CubeMX 配置”已经由本教程完成：`keil_proj_demo.ioc` 是 CubeMX 工程，`Core/Src/gpio.c` 已初始化 PA4~PA8，`SystemClock_Config()` 已配置好 168 MHz 系统时钟，HAL 库和 Keil 工程也已就绪。
+上面流程里”工程需求、硬件电路、CubeMX 配置”已经由本教程完成：`keil_proj_demo.ioc` 是 CubeMX 工程，`Core/Src/gpio.c` 已初始化 PB0、PB3~PB6，`SystemClock_Config()` 已配置好 550 MHz 系统时钟，HAL 库和 Keil 工程也已就绪。
 
 ### 本教程的教学重点
 
@@ -40,15 +40,15 @@
 
 ## 硬件资源
 
-STM32F405RGT6 的 PA4~PA8 引脚连接了 4 颗 LED 和 1 个蜂鸣器，具体如下：
+STM32H723ZETx 的 PB0、PB3~PB6 引脚连接了 4 颗 LED 和 1 个蜂鸣器，具体如下：
 
 | 外设   | 引脚 | 说明       |
 | ------ | ---- | ---------- |
-| LED1   | PA4  | 高电平点亮 |
-| LED2   | PA5  | 高电平点亮 |
-| LED3   | PA6  | 高电平点亮 |
-| LED4   | PA7  | 高电平点亮 |
-| 蜂鸣器 | PA8  | 高电平响   |
+| LED1   | PB3  | 高电平点亮 |
+| LED2   | PB4  | 高电平点亮 |
+| LED3   | PB5  | 高电平点亮 |
+| LED4   | PB6  | 高电平点亮 |
+| 蜂鸣器 | PB0  | 高电平响   |
 
 引脚初始化代码在 `Core/Src/gpio.c` 的 `MX_GPIO_Init()` 中，由 STM32CubeMX 生成。
 
@@ -61,7 +61,7 @@ keil_proj_demo/
 │   └── Src/                 # main.c、gpio.c、中断服务程序等源文件
 ├── Drivers/
 │   ├── CMSIS/               # ARM 内核相关文件
-│   └── STM32F4xx_HAL_Driver/ # STM32 HAL 库
+│   └── STM32H7xx_HAL_Driver/ # STM32 HAL 库
 ├── hardware/
 │   ├── inc/                 # 自己写的 LED、蜂鸣器头文件
 │   └── src/                 # 自己写的 LED、蜂鸣器实现文件
@@ -84,7 +84,7 @@ keil_proj_demo/
 
 ```text
 Core/Src/main.c      程序入口，主循环在这里
-Core/Src/gpio.c      GPIO 初始化，配置 PA4~PA8 为输出
+Core/Src/gpio.c      GPIO 初始化，配置 PB0、PB3~PB6 为输出
 hardware/inc/led.h   LED 函数声明和引脚宏
 hardware/src/led.c   LED 点亮/熄灭实现，里面有 switch 例子
 hardware/inc/buzzer.h 蜂鸣器函数声明和引脚宏
@@ -100,7 +100,7 @@ MDK-ARM/keil_proj_demo.uvprojx  Keil 工程文件，双击或在 Keil 中打开
 
 ## 打开、编译和下载
 
-1. 安装 Keil MDK 5，并安装 STM32F4 器件支持包；
+1. 安装 Keil MDK 5，并安装 STM32H7 器件支持包；
 2. 在 _文件资源管理器中_ 双击打开 `MDK-ARM/keil_proj_demo.uvprojx`；
 3. 按 `F7` 编译工程；
 4. 连接 ST-Link 或调试器，按 `F8` 下载；
@@ -120,7 +120,7 @@ Keil MDK 的编译下载流程通常分这几步：
 
 1. 预处理：处理 `#include`、`#define` 宏替换、条件编译；
 2. 编译：对 C 源码进行词法、语法、语义分析，生成 ARM 汇编或目标文件 `.o`；
-3. 汇编：启动文件 `startup_stm32f405xx.s` 等汇编代码也被汇编成目标文件；
+3. 汇编：启动文件 `startup_stm32h723xx.s` 等汇编代码也被汇编成目标文件；
 4. 链接：把多个 `.o` 文件和库按地址分配链接在一起，生成可执行映像 `.axf` 和烧录文件 `.hex`；
 5. 下载：通过 ST-Link 等调试器把 `.hex` 写入芯片 Flash。
 
@@ -142,12 +142,12 @@ Keil MDK 的编译下载流程通常分这几步：
 
 ```text
 复位
-  -> startup_stm32f405xx.s（启动文件，初始化栈和中断向量表）
+  -> startup_stm32h723xx.s（启动文件，初始化栈和中断向量表）
   -> SystemInit（配置时钟树基础部分）
   -> main
       -> HAL_Init（初始化 HAL 库和 SysTick）
-      -> SystemClock_Config（配置系统时钟，本工程为 168 MHz）
-      -> MX_GPIO_Init（配置 PA4~PA8 为推挽输出）
+      -> SystemClock_Config（配置系统时钟，本工程为 550 MHz）
+      -> MX_GPIO_Init（配置 PB0、PB3~PB6 为推挽输出）
       -> while (1)（无限循环，执行 LED/蜂鸣器演示）
 ```
 

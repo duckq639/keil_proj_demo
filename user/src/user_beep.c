@@ -5,7 +5,7 @@
  */
 #include "user_beep.h"
 #include "buzzer.h"
-#include "stm32f4xx_hal.h"
+#include "stm32h7xx_hal.h"
 
 #define USER_BEEP_LONG_MS   300U  /* 长音时长 */
 #define USER_BEEP_SHORT_MS  100U  /* 短音时长 */

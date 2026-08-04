@@ -10,13 +10,13 @@ void buzzer_init(void)
     buzzer_off();
 }
 
-/* 打开蜂鸣器：把 PA8 输出高电平 */
+/* 打开蜂鸣器：把 PB0 输出高电平 */
 void buzzer_on(void)
 {
     HAL_GPIO_WritePin(BUZZER_GPIO_PORT, BUZZER_PIN, GPIO_PIN_SET);
 }
 
-/* 关闭蜂鸣器：把 PA8 输出低电平 */
+/* 关闭蜂鸣器：把 PB0 输出低电平 */
 void buzzer_off(void)
 {
     HAL_GPIO_WritePin(BUZZER_GPIO_PORT, BUZZER_PIN, GPIO_PIN_RESET);
