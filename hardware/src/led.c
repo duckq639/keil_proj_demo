@@ -4,6 +4,16 @@
  */
 #include "led.h"
 
+void my_led(uint8_t led_num) {
+    uint8_t n = led_num + 1;
+    while (n--) {
+       led_on(led_num);
+       HAL_Delay(300U);
+       led_off(led_num);
+       HAL_Delay(300U);
+    }
+}
+
 /* 点亮指定编号的 LED */
 void led_on(uint8_t led_num)
 {
