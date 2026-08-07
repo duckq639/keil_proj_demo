@@ -9,18 +9,21 @@
 #include "stm32h7xx_hal.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* 宏定义：给蜂鸣器使用的端口和引脚起一个容易记住的名字 */
-/* H7 板：蜂鸣器接 PB0 */
 #define BUZZER_GPIO_PORT GPIOB
-#define BUZZER_PIN       GPIO_PIN_0
+#define BUZZER_PIN GPIO_PIN_0
 
-/* 函数声明（原型）：只声明函数存在，不写实现 */
-void buzzer_init(void);
-void buzzer_on(void);
-void buzzer_off(void);
+    /* 函数声明（原型）：只声明函数存在，不写实现 */
+    void buzzer_init(void);
+
+    void buzzer_on(void);
+    void buzzer_off(void);
+
+    void beep(uint32_t beep_ms);
 
 #ifdef __cplusplus
 }

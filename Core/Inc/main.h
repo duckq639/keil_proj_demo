@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+extern int signal;
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

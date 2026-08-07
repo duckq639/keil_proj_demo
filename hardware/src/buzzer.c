@@ -21,3 +21,10 @@ void buzzer_off(void)
 {
     HAL_GPIO_WritePin(BUZZER_GPIO_PORT, BUZZER_PIN, GPIO_PIN_RESET);
 }
+
+void beep(uint32_t beep_ms)
+{
+  buzzer_on();          /* 打开蜂鸣器 */
+  HAL_Delay(beep_ms);   /* 保持响一段时间 */
+  buzzer_off();         /* 关闭蜂鸣器 */
+}
